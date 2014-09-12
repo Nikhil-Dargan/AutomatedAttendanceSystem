@@ -1,0 +1,90 @@
+clear all
+clc
+FDetect = vision.CascadeObjectDetector;
+NoseDetect = vision.CascadeObjectDetector('Nose','MergeThreshold',1);
+MouthDetect = vision.CascadeObjectDetector('Mouth','MergeThreshold',1);
+EyeDetect = vision.CascadeObjectDetector('EyePairBig');
+
+
+
+datapath='C:\Documents and Settings\Nikhil\My Documents\MATLAB\train';
+
+D = dir(datapath);  
+mean = [];
+%imgcount = 0;
+for i=1 : size(D,1)
+        %rollno retrieve from DB
+   if not(strcmp(D(i).name,'.')|strcmp(D(i).name,'..')|strcmp(D(i).name,'Thumbs.db')) 
+        DD = dir(strcat(datapath,'\',D(i).name));
+        imgcount = 0;
+        for j=1 : size(DD,1)
+            if not(strcmp(DD(j).name,'.')|strcmp(DD(j).name,'..')|strcmp(DD(j).name,'Thumbs.db'))
+                imgcount = imgcount + 1; 
+            end
+        end
+
+        X = [];
+        facial_num = [];
+        y= ['   f_w  ' ' f_h ' '  n_w  ' ' n_h' '   m_w' '   m_h  ' '  e_w  ' ' e_h' ];
+        %disp(imgcount);
+        for k = 1: imgcount
+            %I = imread('C:\Documents and Settings\Nikhil\My Documents\MATLAB\train\1.jpeg');
+            str = strcat(datapath,'\',D(i).name,'\',D(i).name,'.',int2str(k),'.jpg');
+            %disp(str);
+            img = imread(str);
+            B1 = step(FDetect,img);
+            B2 = step(NoseDetect,img);
+            B3 = step(MouthDetect,img);
+            B4 = step(EyeDetect,img);
+            if(size(B2,1)==0)
+                B2(1,:)=0;
+            end
+            if(size(B3,1)==0)
+                B3(1,:)=0;
+            end
+            if(size(B4,1)==0)
+                B4(1,:)=0;
+            end
+            if(size(B1,1)> 0)
+                X = [X ; B1(1,[3 4]) B2(1,[3 4]) B3(1,[3 4]) B4(1,[3 4])];
+                temp=B1(1,4)*0.4 + (B2(1,3) + B2(1,4))*0.25 + (B3(1,3)+B3(1,4))*0.1 + (B4(1,3)+B4(1,4))*0.1;
+                %disp(temp);
+                temp=temp/B1(1,3);
+                %disp(temp);
+                facial_num=[facial_num temp]
+                
+                
+            end
+           % clc
+            disp(facial_num);
+        
+        end
+            %meant=mean(facial_num);
+            %meanaaa=[meanaaa meant];
+      %  disp(y);
+       %     disp(X);
+        %        disp(D(i).name);
+         %       disp('*****');
+                
+   end
+end
+%clc
+%disp(meanaaa);
+% figure,
+% imshow(img); hold on
+% for i = 1:size(B1,1)
+%     rectangle('Position',B1(i,:),'LineWidth',5,'LineStyle','-','EdgeColor','r');
+% end
+% for i = 1:size(B4,1)
+%   rectangle('Position',B4(i,:),'LineWidth',4,'LineStyle','-','EdgeColor','r');
+% end
+%  
+% for i = 1:size(B2,1)
+%   rectangle('Position',B2(i,:),'LineWidth',4,'LineStyle','-','EdgeColor','r');
+% end
+% 
+% for i = 1:size(B3,1)
+%   rectangle('Position',B3(i,:),'LineWidth',4,'LineStyle','-','EdgeColor','r');
+% end
+% title('Face Detection');
+% hold off;
